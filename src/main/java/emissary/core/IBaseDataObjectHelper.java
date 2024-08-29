@@ -160,6 +160,14 @@ public final class IBaseDataObjectHelper {
         }
     }
 
+    public static void addParentInformationToChild(final IBaseDataObject childIBaseDataObject, final boolean nullifyFileType,
+            final Set<String> alwaysCopyMetadataKeys, final String placeKey, final KffDataObjectHandler kffDataObjectHandler) {
+        if(childIBaseDataObject.getTopLevelDocument() != null) {
+            addParentInformationToChild(childIBaseDataObject.getTopLevelDocument(), childIBaseDataObject, nullifyFileType, alwaysCopyMetadataKeys,
+                    placeKey, kffDataObjectHandler);
+        }
+    }
+
     /**
      * Used to propagate needed parent information to a sprouted child. NOTE: This is taken from
      * emissary.place.MultiFileServerPlace.

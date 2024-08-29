@@ -194,6 +194,8 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
 
     final SafeUsageChecker safeUsageChecker = new SafeUsageChecker();
 
+    protected final IBaseDataObject topLevelDocument;
+
     protected enum DataState {
         NO_DATA, CHANNEL_ONLY, BYTE_ARRAY_ONLY, BYTE_ARRAY_AND_CHANNEL
     }
@@ -250,6 +252,7 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
      */
     public BaseDataObject() {
         this.theData = null;
+        this.topLevelDocument = null;
         setCreationTimestamp(Instant.now());
     }
 
@@ -264,6 +267,7 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
         setData(newData);
         setFilename(name);
         setCreationTimestamp(Instant.now());
+        this.topLevelDocument = null;
     }
 
     /**
@@ -283,6 +287,35 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
 
     public BaseDataObject(final byte[] newData, final String name, final String form, @Nullable final String fileType) {
         this(newData, name, form);
+        if (fileType != null) {
+            this.setFileType(fileType);
+        }
+    }
+
+    // TODO - new with tld
+    public BaseDataObject(IBaseDataObject topLevelDocument) {
+        this.theData = null;
+        this.topLevelDocument = topLevelDocument;
+        setCreationTimestamp(Instant.now());
+    }
+
+    public BaseDataObject(IBaseDataObject topLevelDocument, final byte[] newData, final String name) {
+        this.topLevelDocument = topLevelDocument;
+        setData(newData);
+        setFilename(name);
+        setCreationTimestamp(Instant.now());
+    }
+
+    public BaseDataObject(IBaseDataObject topLevelDocument, final byte[] newData, final String name, @Nullable final String form) {
+        this(topLevelDocument, newData, name);
+        if (form != null) {
+            pushCurrentForm(form);
+        }
+    }
+
+    public BaseDataObject(IBaseDataObject topLevelDocument, final byte[] newData, final String name, final String form,
+            @Nullable final String fileType) {
+        this(topLevelDocument, newData, name, form);
         if (fileType != null) {
             this.setFileType(fileType);
         }
@@ -1508,5 +1541,10 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
     @Override
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    @Override
+    public IBaseDataObject getTopLevelDocument() {
+        return null;
     }
 }

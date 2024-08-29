@@ -928,4 +928,11 @@ public interface IBaseDataObject {
      * @param transactionId the unique identifier of the transaction
      */
     void setTransactionId(String transactionId);
+
+    /**
+     * Get the Top Level Document
+     *
+     * @return The Top Level Document IBaseDataObject
+     */
+    IBaseDataObject getTopLevelDocument();
 }

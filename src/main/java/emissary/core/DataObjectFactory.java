@@ -97,4 +97,22 @@ public class DataObjectFactory {
         final Object o = Factory.create(clazz, payload, filename, form, fileType);
         return (IBaseDataObject) o;
     }
+
+    // TODO - DDDDD
+    public static IBaseDataObject getInstance(IBaseDataObject topLevelDocument) {
+        final Object o = Factory.create(clazz, topLevelDocument);
+        return (IBaseDataObject) o;
+    }
+
+    public static IBaseDataObject getInstance(IBaseDataObject topLevelDocument, final byte[] payload, final String filename,
+            final String fileTypeAndForm) {
+        return getInstance(topLevelDocument, payload, filename, fileTypeAndForm, fileTypeAndForm);
+    }
+
+    public static IBaseDataObject getInstance(IBaseDataObject topLevelDocument, final byte[] payload, final String filename, final String form,
+            final String fileType) {
+        final Object o = Factory.create(clazz, topLevelDocument, payload, filename, form, fileType);
+        return (IBaseDataObject) o;
+    }
+
 }
