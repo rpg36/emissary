@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1459,5 +1460,39 @@ class BaseDataObjectTest extends UnitTest {
 
             assertArrayEquals(bytes2, byteArrayOutputStream.toByteArray());
         }
+    }
+
+    @Test
+    void testSetParentInformation() {
+        IBaseDataObject parent = new BaseDataObject();
+        parent.putParameter("test", "from the parent");
+        parent.putParameter("test1", "also from the parent");
+        Set<String> inheritedKeys = new HashSet<>();
+        inheritedKeys.add("test");
+
+        try {
+            parent.setParentInformation(parent, inheritedKeys);
+            fail("Expected IllegalStateException for circular ancestry");
+        } catch(IllegalStateException e) {
+
+        }
+
+        IBaseDataObject child = new BaseDataObject();
+        child.putParameter("test", "from the child");
+        child.putParameter("test1", "also from the child");
+        child.putParameter("test2", "only in the child");
+
+        // Before adding a parent
+        assertEquals("from the child", child.getStringParameter("test"));
+        assertEquals("also from the child", child.getStringParameter("test1"));
+        assertEquals("only in the child", child.getStringParameter("test2"));
+
+        // After adding a parent
+        child.setParentInformation(parent, inheritedKeys);
+        assertEquals("from the parent", child.getStringParameter("test"));
+        // The parent has this key, but it's not in the set of inherited keys
+        assertEquals("also from the child", child.getStringParameter("test1"));
+        assertEquals("only in the child", child.getStringParameter("test2"));
+
     }
 }

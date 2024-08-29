@@ -928,4 +928,15 @@ public interface IBaseDataObject {
      * @param transactionId the unique identifier of the transaction
      */
     void setTransactionId(String transactionId);
+
+    /**
+     * Set the parent information. This allows the linking of parent parameter fields to a child without having to copy the
+     * values
+     * 
+     * @param parent The parent IBaseDataObject
+     * @param fields A set of fields to inherit from the parent taking precedence over the values of the child
+     */
+    void setParentInformation(IBaseDataObject parent, Set<String> fields);
+
+    IBaseDataObject getParent();
 }

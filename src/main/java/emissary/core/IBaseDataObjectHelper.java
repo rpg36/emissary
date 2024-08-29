@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
@@ -124,14 +125,8 @@ public final class IBaseDataObjectHelper {
             childIBaseDataObject.setClassification(parentIBaseDataObject.getClassification());
         }
 
-        // And some other things we configure to be always copied
-        for (final String meta : alwaysCopyMetadataKeys) {
-            final List<Object> parentVals = parentIBaseDataObject.getParameter(meta);
-
-            if (parentVals != null) {
-                childIBaseDataObject.putParameter(meta, parentVals);
-            }
-        }
+        // Link the parent and it's applicable metadata keys to the child
+        childIBaseDataObject.setParentInformation(parentIBaseDataObject, alwaysCopyMetadataKeys);
 
         // Copy over the transform history up to this point
         childIBaseDataObject.setHistory(parentIBaseDataObject.getTransformHistory());
@@ -211,9 +206,10 @@ public final class IBaseDataObjectHelper {
         Validate.notNull(parentIBaseDataObject, "Required: parentIBaseDataObject not null");
         Validate.notNull(childIBaseDataObject, "Required: childIBaseDataObject not null");
         Validate.notNull(excludedParametersPattern, "Required: excludedParametersPattern not null");
-        StreamSupport.stream(parentIBaseDataObject.getParameterKeys().spliterator(), false)
+        Set<String> alwaysCopyMetadataKeys = StreamSupport.stream(parentIBaseDataObject.getParameterKeys().spliterator(), false)
                 .filter(key -> !excludedParametersPattern.matcher(key).matches())
-                .forEach(key -> childIBaseDataObject.putParameter(key, parentIBaseDataObject.getParameter(key)));
+                .collect(Collectors.toSet());
+        childIBaseDataObject.setParentInformation(parentIBaseDataObject, alwaysCopyMetadataKeys);
     }
 
     /**

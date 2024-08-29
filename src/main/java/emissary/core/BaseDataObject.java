@@ -194,6 +194,10 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
 
     final SafeUsageChecker safeUsageChecker = new SafeUsageChecker();
 
+    private IBaseDataObject parent;
+
+    private Set<String> parentKeys;
+
     protected enum DataState {
         NO_DATA, CHANNEL_ONLY, BYTE_ARRAY_ONLY, BYTE_ARRAY_AND_CHANNEL
     }
@@ -953,13 +957,23 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
         putParameters(m, MergePolicy.KEEP_EXISTING);
     }
 
+    private List<Object> getParentParameter(final String key) {
+        if (parent != null && parentKeys != null && parentKeys.contains(key)) {
+            return parent.getParameter(key);
+        }
+        return null;
+    }
+
     @Nullable
     @Override
     public List<Object> getParameter(final String key) {
-        // Try remapping
-        List<Object> v = this.parameters.get(key);
-        if (CollectionUtils.isEmpty(v)) {
-            return null;
+        List<Object> v = getParentParameter(key);
+        if (v == null) {
+            // Try remapping
+            v = this.parameters.get(key);
+            if (CollectionUtils.isEmpty(v)) {
+                return null;
+            }
         }
         return v;
     }
@@ -1508,5 +1522,39 @@ public class BaseDataObject implements Serializable, Cloneable, Remote, IBaseDat
     @Override
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    /**
+     * Determine if this IBaseDataObject is in the lineage of another IBaseDataObject.
+     * @param other The other IBaseDataObject to evaluate
+     * @return true if this IBaseDataObject is in the lineage of the other or false otherwise.
+     */
+    private boolean inLineage(IBaseDataObject other) {
+        if (this.equals(other)) {
+            return true;
+        }
+        other = other.getParent();
+        while(other != null) {
+            if(this.equals(other)) {
+                return true;
+            }
+            other = other.getParent();
+        }
+        return false;
+    }
+
+    @Override
+    public void setParentInformation(IBaseDataObject parent, Set<String> fields) {
+        // Prevent circular references
+        if (inLineage(parent)) {
+            throw new IllegalStateException("Circular Ancestry: This IBaseDataObject is already in the lineage of parent");
+        }
+        this.parent = parent;
+        this.parentKeys = fields;
+    }
+
+    @Override
+    public IBaseDataObject getParent() {
+        return parent;
     }
 }
